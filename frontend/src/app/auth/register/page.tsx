@@ -6,13 +6,15 @@ import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase } from "
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+// Note: avoid useSearchParams at top-level to prevent prerender CSR bailout
+
 
 export default function RegisterPage() {
     const [role, setRole] = useState<"student" | "recruiter">("student");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fullName, setFullName] = useState("");
+    const [company, setCompany] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
 
@@ -30,7 +32,8 @@ export default function RegisterPage() {
 
         // Simulate registration and auto-login
         setTimeout(() => {
-            login("mock-token");
+            // Save role/company on mock login for demo
+            login("mock-token", role, company || undefined);
             setIsLoading(false);
         }, 1500);
     };
@@ -140,6 +143,22 @@ export default function RegisterPage() {
                                 />
                             </div>
                         </div>
+
+                        {role === "recruiter" && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium ml-1">Company Name</label>
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        required
+                                        value={company}
+                                        onChange={(e) => setCompany(e.target.value)}
+                                        placeholder="Your Company"
+                                        className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-4 pr-4 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             type="submit"
