@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,7 @@ import {
     Rocket
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 
 export default function StudentDashboard() {

@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { motion, Variants } from "framer-motion";
 import { GraduationCap, Briefcase, Rocket } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import Link from "next/link";
 

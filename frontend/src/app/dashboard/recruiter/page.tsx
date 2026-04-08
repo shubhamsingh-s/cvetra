@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import {
@@ -12,7 +12,7 @@ import {
     Star
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 
 export default function RecruiterDashboard() {
