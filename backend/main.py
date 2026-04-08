@@ -20,3 +20,12 @@ app.include_router(resume.router, prefix='/api/resume')
 app.include_router(jobs.router, prefix='/api/jobs')
 app.include_router(applications.router, prefix='/api/applications')
 app.include_router(recruiter.router, prefix='/api/recruiter')
+
+
+if __name__ == "__main__":
+    # When running locally or when a process manager invokes this file directly,
+    # bind to the port provided by the environment (Render sets $PORT).
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=port, log_level="info")
