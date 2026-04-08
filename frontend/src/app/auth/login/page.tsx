@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight, Rocket } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -11,34 +12,29 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
 
         try {
-            // In a real app, you would call the backend API here
-            // For now, we'll simulate a login success
-            const response = await fetch("http://localhost:8000/api/v1/login/access-token", {
+            const data: any = await apiFetch("/api/v1/login/access-token", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
-                    username: email,
-                    password: password,
-                }),
+                body: new URLSearchParams({ username: email, password }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (data && data.access_token) {
                 login(data.access_token);
             } else {
-                // Success fallback for demo if backend is not running
-                login("mock-token");
+                throw new Error("Invalid credentials or missing access token.");
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            login("mock-token"); // Fallback for UI demo
+        } catch (err: any) {
+            console.error("Login error:", err);
+            setError(err.message || "Login failed. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -72,6 +68,11 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <label className="text-sm font-medium ml-1">Email Address</label>
                             <div className="relative group">

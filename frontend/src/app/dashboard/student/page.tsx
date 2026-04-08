@@ -17,6 +17,7 @@ import {
     Rocket
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -41,27 +42,13 @@ export default function StudentDashboard() {
         formData.append("job_description", "Software Engineer role with React and Python experience.");
 
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch("http://localhost:8000/api/v1/resume/upload", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: formData,
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setAnalysisResult(data);
-            } else {
-                const errData = await response.json();
-                throw new Error(errData.detail || "Upload failed");
-            }
+            const data = await apiFetch("/api/v1/resume/upload", { method: "POST", body: formData });
+            setAnalysisResult(data);
         } catch (err: any) {
             console.error("Upload error:", err);
             setError(err.message || "Something went wrong while analyzing your resume.");
 
-            // MOCK DATA for demonstration if backend fails
+            // MOCK DATA for demonstration if backend fails (keeps UI usable during local dev)
             setTimeout(() => {
                 setAnalysisResult({
                     filename: selectedFile.name,
