@@ -1,28 +1,63 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import {
     Users,
-    Search,
     BarChart3,
-    Settings,
     LogOut,
     LayoutDashboard,
     Briefcase,
-    Star
+    Star,
+    FileSearch,
+    ClipboardList,
+    ArrowRight
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
+import Link from "next/link";
 
 export default function RecruiterDashboard() {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+
+    const quickActions = [
+        {
+            icon: LayoutDashboard,
+            label: "Dashboard",
+            description: "See hiring metrics and active hiring activity.",
+            href: "/dashboard/recruiter",
+            active: true,
+        },
+        {
+            icon: Briefcase,
+            label: "Create Job",
+            description: "Open a new role and define the candidate profile.",
+            href: "/dashboard/recruiter/postjob",
+        },
+        {
+            icon: FileSearch,
+            label: "Check Resume",
+            description: "Upload and screen resumes against your hiring needs.",
+            href: "/dashboard/recruiter/bulk",
+        },
+        {
+            icon: BarChart3,
+            label: "Resume Report",
+            description: "Review resume quality, fit, and fraud signals.",
+            href: "/dashboard/recruiter/fraud",
+        },
+        {
+            icon: ClipboardList,
+            label: "Applied Candidate List",
+            description: "Track applicants through your recruiting pipeline.",
+            href: "/dashboard/recruiter/pipeline",
+        },
+    ];
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans">
             <ModeToggle />
 
-            {/* Sidebar */}
             <aside className="fixed left-0 top-0 h-full w-20 md:w-64 glass border-r border-white/10 z-50 flex flex-col">
                 <div className="p-6 flex items-center gap-3">
                     <div className="p-2 bg-slate-800 rounded-lg">
@@ -32,15 +67,10 @@ export default function RecruiterDashboard() {
                 </div>
 
                 <nav className="flex-1 px-4 py-6 space-y-2">
-                    {[
-                        { icon: LayoutDashboard, label: "Overview", active: true },
-                        { icon: Search, label: "Search Talent" },
-                        { icon: Users, label: "Applicants" },
-                        { icon: Star, label: "Favorites" },
-                        { icon: BarChart3, label: "Analytics" },
-                    ].map((item, idx) => (
-                        <button
-                            key={idx}
+                    {quickActions.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
                             className={cn(
                                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
                                 item.active ? "bg-slate-800 text-white shadow-lg shadow-black/20" : "hover:bg-foreground/5 text-muted-foreground"
@@ -48,7 +78,7 @@ export default function RecruiterDashboard() {
                         >
                             <item.icon className="w-5 h-5" />
                             <span className="font-medium hidden md:block">{item.label}</span>
-                        </button>
+                        </Link>
                     ))}
                 </nav>
 
@@ -63,7 +93,6 @@ export default function RecruiterDashboard() {
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main className="pl-20 md:pl-64 p-6 md:p-12">
                 <header className="mb-12">
                     <motion.h1
@@ -71,9 +100,9 @@ export default function RecruiterDashboard() {
                         animate={{ opacity: 1, x: 0 }}
                         className="text-4xl font-extrabold mb-2"
                     >
-                        Find Your Next <span className="text-slate-400">Star</span>
+                        {user?.company_name || "Recruiter"} Hiring <span className="text-slate-400">Dashboard</span>
                     </motion.h1>
-                    <p className="text-muted-foreground">Strategic talent intelligence for high-growth teams.</p>
+                    <p className="text-muted-foreground">Manage jobs, review resumes, and track applicants from one recruiter workspace.</p>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -99,10 +128,32 @@ export default function RecruiterDashboard() {
                     ))}
                 </div>
 
-                <div className="glass rounded-[2rem] p-12 border border-white/10 border-dashed text-center">
-                    <Search className="w-12 h-12 text-muted-foreground/20 mx-auto mb-6" />
-                    <h3 className="text-xl font-bold mb-2">Initialize Talent Search</h3>
-                    <p className="text-muted-foreground max-w-sm mx-auto">Start by creating a job description or uploading a target profile to find matching candidates.</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {quickActions.map((item, index) => (
+                        <motion.div
+                            key={item.href}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.08 }}
+                            className="glass rounded-[2rem] p-8 border border-white/10"
+                        >
+                            <div className="flex items-start justify-between gap-4 mb-5">
+                                <div className="p-3 bg-slate-800 rounded-2xl">
+                                    <item.icon className="w-6 h-6 text-white" />
+                                </div>
+                                {item.active && <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Current</span>}
+                            </div>
+                            <h3 className="text-2xl font-bold mb-2">{item.label}</h3>
+                            <p className="text-muted-foreground mb-6">{item.description}</p>
+                            <Link
+                                href={item.href}
+                                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-200 hover:text-white transition-colors"
+                            >
+                                Open Section
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </motion.div>
+                    ))}
                 </div>
             </main>
         </div>

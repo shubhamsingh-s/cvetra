@@ -1,74 +1,71 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
+
+export type UserRole = "student" | "recruiter";
 
 interface User {
     id: string;
     email: string;
     full_name?: string;
+    role: UserRole;
+    company_name?: string;
     is_active: boolean;
     is_superuser: boolean;
+}
+
+interface AuthSession {
+    token: string;
+    user: User;
 }
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
-    login: (token: string, role?: string, company?: string) => void;
+    login: (session: AuthSession) => void;
     logout: () => void;
     isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getDashboardPath(role: UserRole) {
+    return role === "recruiter" ? "/dashboard/recruiter" : "/dashboard/student";
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(() => {
+        if (typeof window === "undefined") return null;
+
+        const savedUser = localStorage.getItem("user");
+        if (!savedUser) return null;
+
+        try {
+            return JSON.parse(savedUser) as User;
+        } catch {
+            localStorage.removeItem("user");
+            return null;
+        }
+    });
+    const [token, setToken] = useState<string | null>(() => {
+        if (typeof window === "undefined") return null;
+        return localStorage.getItem("token");
+    });
+    const [isLoading] = useState(false);
     const router = useRouter();
 
-    useEffect(() => {
-        const savedToken = localStorage.getItem("token");
-        const savedRole = localStorage.getItem("role");
-        const savedCompany = localStorage.getItem("company");
-        const savedEmail = localStorage.getItem("email");
-        if (savedToken) {
-            setToken(savedToken);
-            // In a real app, fetch user profile. For demo, restore from localStorage when present.
-            setUser({
-                id: "1",
-                email: savedEmail || "user@example.com",
-                is_active: true,
-                is_superuser: false,
-            });
-            // Attach role/company to window for quick access in UI (non-ideal but simple)
-            if (savedRole) (window as any).__ROLE = savedRole;
-            if (savedCompany) (window as any).__COMPANY = savedCompany;
-        }
-        setIsLoading(false);
-    }, []);
-
-    const login = (newToken: string, role: string = "student", company?: string) => {
+    const login = ({ token: newToken, user: nextUser }: AuthSession) => {
         localStorage.setItem("token", newToken);
-        localStorage.setItem("role", role);
-        if (company) localStorage.setItem("company", company);
+        localStorage.setItem("user", JSON.stringify(nextUser));
         setToken(newToken);
-        setUser({
-            id: "1",
-            email: "user@example.com",
-            is_active: true,
-            is_superuser: false,
-        });
-        // Navigate to role-specific dashboard
-        if (role === "recruiter") router.push("/dashboard/recruiter");
-        else router.push("/dashboard/student");
+        setUser(nextUser);
+        router.push(getDashboardPath(nextUser.role));
     };
 
     const logout = () => {
         localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        localStorage.removeItem("company");
-        localStorage.removeItem("email");
+        localStorage.removeItem("user");
         setToken(null);
         setUser(null);
         router.push("/");

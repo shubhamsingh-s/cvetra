@@ -1,1 +1,5 @@
-export default function Register() { return <div>Register Page</div>; }
+import { redirect } from "next/navigation";
+
+export default function Register() {
+    redirect("/auth/register");
+}

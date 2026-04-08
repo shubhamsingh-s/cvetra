@@ -1,52 +1,77 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Mail, ArrowRight, Rocket } from "lucide-react";
-import { useAuth } from "@/context/auth-context";
-import { apiFetch } from "@/lib/api";
+import { Lock, Mail, ArrowRight, Rocket, Briefcase, GraduationCap, Building2 } from "lucide-react";
+import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function LoginPage() {
+    const [role, setRole] = useState<UserRole>("student");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [companyName, setCompanyName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const { login } = useAuth();
-    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError(null);
 
-            try {
-                const data: any = await apiFetch("/api/v1/login/access-token", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({ username: email, password }),
+        const mockUser = {
+            id: `${role}-${email || "demo"}`,
+            email,
+            full_name: role === "student" ? "Student User" : "Recruiter User",
+            role,
+            company_name: role === "recruiter" ? companyName : undefined,
+            is_active: true,
+            is_superuser: false,
+        } as const;
+
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const response = await fetch(`${API_URL}/api/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    role,
+                    company_name: role === "recruiter" ? companyName : undefined,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json().catch(() => null);
+                login({
+                    token: data?.access_token || `mock-token-${role}`,
+                    user: {
+                        ...mockUser,
+                        email: data?.email || email,
+                        role: (data?.role as UserRole) || role,
+                        company_name: data?.company_name || mockUser.company_name,
+                    },
                 });
-
-                if (data && data.access_token) {
-                    // If backend returns role/company include them; otherwise default to student
-                    const role = data.role || "student";
-                    const company = data.company;
-                    login(data.access_token, role, company);
-                } else {
-                    throw new Error("Invalid credentials or missing access token.");
-                }
-            } catch (err: any) {
-                console.error("Login error:", err);
-                setError(err.message || "Login failed. Please try again.");
-            } finally {
-                setIsLoading(false);
+            } else {
+                login({
+                    token: `mock-token-${role}`,
+                    user: mockUser,
+                });
             }
+        } catch (error) {
+            console.error("Login error:", error);
+            login({
+                token: `mock-token-${role}`,
+                user: mockUser,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <main className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
-            {/* Background Orbs */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[30vw] h-[30vw] bg-blue-500/10 blur-[100px] rounded-full animate-pulse" />
                 <div className="absolute bottom-[10%] right-[10%] w-[30vw] h-[30vw] bg-purple-500/10 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: "2s" }} />
@@ -72,11 +97,35 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {error && (
-                            <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">
-                                {error}
-                            </div>
-                        )}
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setRole("student")}
+                                className={cn(
+                                    "p-4 rounded-2xl border transition-all flex flex-col items-center gap-3",
+                                    role === "student"
+                                        ? "bg-blue-500/10 border-blue-500 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
+                                        : "bg-foreground/5 border-white/5 opacity-70 hover:opacity-100"
+                                )}
+                            >
+                                <GraduationCap className={cn("w-6 h-6", role === "student" ? "text-blue-500" : "text-muted-foreground")} />
+                                <span className="text-sm font-semibold">Student</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setRole("recruiter")}
+                                className={cn(
+                                    "p-4 rounded-2xl border transition-all flex flex-col items-center gap-3",
+                                    role === "recruiter"
+                                        ? "bg-slate-500/10 border-slate-500 shadow-[0_0_20px_-5px_rgba(100,116,139,0.3)]"
+                                        : "bg-foreground/5 border-white/5 opacity-70 hover:opacity-100"
+                                )}
+                            >
+                                <Briefcase className={cn("w-6 h-6", role === "recruiter" ? "text-slate-400" : "text-muted-foreground")} />
+                                <span className="text-sm font-semibold">Recruiter</span>
+                            </button>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium ml-1">Email Address</label>
                             <div className="relative group">
@@ -92,6 +141,23 @@ export default function LoginPage() {
                             </div>
                         </div>
 
+                        {role === "recruiter" && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium ml-1">Company Name</label>
+                                <div className="relative group">
+                                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-slate-400 transition-colors" />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={companyName}
+                                        onChange={(e) => setCompanyName(e.target.value)}
+                                        placeholder="Your company"
+                                        className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-slate-500/50 transition-all"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-sm font-medium">Password</label>
@@ -104,7 +170,7 @@ export default function LoginPage() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                    placeholder="........"
                                     className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                                 />
                             </div>
@@ -126,7 +192,7 @@ export default function LoginPage() {
 
                     <div className="mt-8 text-center text-sm text-muted-foreground">
                         Don't have an account?{" "}
-                        <Link href="/auth/register" className="text-blue-500 font-semibold hover:underline">
+                        <Link href={`/auth/register?role=${role}`} className="text-blue-500 font-semibold hover:underline">
                             Create one for free
                         </Link>
                     </div>

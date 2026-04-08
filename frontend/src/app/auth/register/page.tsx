@@ -1,47 +1,48 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase } from "lucide-react";
-import { useAuth } from "@/context/auth-context";
+import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase, Building2 } from "lucide-react";
+import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-// Note: avoid useSearchParams at top-level to prevent prerender CSR bailout
-
+import { useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
-    const [role, setRole] = useState<"student" | "recruiter">("student");
+    const searchParams = useSearchParams();
+    const initialRole = (searchParams.get("role") as UserRole) || "student";
+
+    const [role, setRole] = useState<UserRole>(initialRole);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fullName, setFullName] = useState("");
-    const [company, setCompany] = useState("");
+    const [companyName, setCompanyName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
-
-    useEffect(() => {
-        // Read query param on client side to avoid CSR-bailout hook during prerender
-        if (typeof window === "undefined") return;
-        const params = new URLSearchParams(window.location.search);
-        const roleParam = params.get("role") as "student" | "recruiter" | null;
-        if (roleParam) setRole(roleParam);
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
-        // Simulate registration and auto-login
         setTimeout(() => {
-            // Save role/company on mock login for demo
-            login("mock-token", role, company || undefined);
+            login({
+                token: `mock-token-${role}`,
+                user: {
+                    id: `${role}-${email || "new-user"}`,
+                    email,
+                    full_name: fullName,
+                    role,
+                    company_name: role === "recruiter" ? companyName : undefined,
+                    is_active: true,
+                    is_superuser: false,
+                },
+            });
             setIsLoading(false);
         }, 1500);
     };
 
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
         <main className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
-            {/* Background Orbs */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[30vw] h-[30vw] bg-blue-500/10 blur-[100px] rounded-full animate-pulse" />
                 <div className="absolute bottom-[10%] right-[10%] w-[30vw] h-[30vw] bg-purple-500/10 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: "2s" }} />
@@ -67,7 +68,6 @@ export default function RegisterPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Role Selection */}
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <button
                                 type="button"
@@ -138,7 +138,7 @@ export default function RegisterPage() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                    placeholder="........"
                                     className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                                 />
                             </div>
@@ -148,13 +148,14 @@ export default function RegisterPage() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium ml-1">Company Name</label>
                                 <div className="relative group">
+                                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-slate-400 transition-colors" />
                                     <input
                                         type="text"
                                         required
-                                        value={company}
-                                        onChange={(e) => setCompany(e.target.value)}
-                                        placeholder="Your Company"
-                                        className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-4 pr-4 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                        value={companyName}
+                                        onChange={(e) => setCompanyName(e.target.value)}
+                                        placeholder="TalentVerse Hiring"
+                                        className="w-full bg-foreground/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-slate-500/50 transition-all"
                                     />
                                 </div>
                             </div>
@@ -176,13 +177,12 @@ export default function RegisterPage() {
 
                     <div className="mt-8 text-center text-sm text-muted-foreground">
                         Already have an account?{" "}
-                        <Link href="/auth/login" className="text-blue-500 font-semibold hover:underline">
+                        <Link href={`/auth/login?role=${role}`} className="text-blue-500 font-semibold hover:underline">
                             Sign In
                         </Link>
                     </div>
                 </div>
             </motion.div>
         </main>
-        </Suspense>
     );
 }
