@@ -1,8 +1,13 @@
-﻿services:
+services:
   - type: web
     name: talentiq-backend
     env: python
     region: oregon
     plan: free
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt"
     startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: GEMINI_API_KEY
+        sync: false # Set manually in Render dashboard
