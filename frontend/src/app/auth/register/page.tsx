@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
@@ -9,10 +9,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
-    const searchParams = useSearchParams();
-    const initialRole = (searchParams.get("role") as "student" | "recruiter") || "student";
-
-    const [role, setRole] = useState<"student" | "recruiter">(initialRole);
+    const [role, setRole] = useState<"student" | "recruiter">("student");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fullName, setFullName] = useState("");
@@ -20,9 +17,12 @@ export default function RegisterPage() {
     const { login } = useAuth();
 
     useEffect(() => {
-        const roleParam = searchParams.get("role") as "student" | "recruiter";
+        // Read query param on client side to avoid CSR-bailout hook during prerender
+        if (typeof window === "undefined") return;
+        const params = new URLSearchParams(window.location.search);
+        const roleParam = params.get("role") as "student" | "recruiter" | null;
         if (roleParam) setRole(roleParam);
-    }, [searchParams]);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,6 +36,7 @@ export default function RegisterPage() {
     };
 
     return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
         <main className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
             {/* Background Orbs */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -163,5 +164,6 @@ export default function RegisterPage() {
                 </div>
             </motion.div>
         </main>
+        </Suspense>
     );
 }
