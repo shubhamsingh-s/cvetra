@@ -14,30 +14,34 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { login } = useAuth();
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
-        try {
-            const data: any = await apiFetch("/api/v1/login/access-token", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ username: email, password }),
-            });
+            try {
+                const data: any = await apiFetch("/api/v1/login/access-token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ username: email, password }),
+                });
 
-            if (data && data.access_token) {
-                login(data.access_token);
-            } else {
-                throw new Error("Invalid credentials or missing access token.");
+                if (data && data.access_token) {
+                    // If backend returns role/company include them; otherwise default to student
+                    const role = data.role || "student";
+                    const company = data.company;
+                    login(data.access_token, role, company);
+                } else {
+                    throw new Error("Invalid credentials or missing access token.");
+                }
+            } catch (err: any) {
+                console.error("Login error:", err);
+                setError(err.message || "Login failed. Please try again.");
+            } finally {
+                setIsLoading(false);
             }
-        } catch (err: any) {
-            console.error("Login error:", err);
-            setError(err.message || "Login failed. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     return (
