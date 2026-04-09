@@ -103,7 +103,7 @@ export default function Home() {
             </motion.div>
 
             <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-              I'm a <span className="text-blue-500">Student</span>
+              I&apos;m a <span className="text-blue-500">Student</span>
             </motion.h2>
 
             <motion.p variants={itemVariants} className="text-lg text-muted-foreground mb-10 max-w-sm leading-relaxed">
@@ -146,7 +146,7 @@ export default function Home() {
             </motion.div>
 
             <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-              I'm a <span className="text-slate-400 group-hover:text-white transition-colors duration-500">Recruiter</span>
+              I&apos;m a <span className="text-slate-400 group-hover:text-white transition-colors duration-500">Recruiter</span>
             </motion.h2>
 
             <motion.p variants={itemVariants} className="text-lg text-muted-foreground mb-10 max-w-sm leading-relaxed">

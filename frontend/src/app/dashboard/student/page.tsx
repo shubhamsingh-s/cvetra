@@ -20,11 +20,24 @@ import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 
+interface AnalysisData {
+    alignment_score: number;
+    missing_skills: string[];
+    strengths: string[];
+    improvement_suggestions: string[];
+    interview_questions: string[];
+}
+
+interface AnalysisResult {
+    filename: string;
+    analysis: AnalysisData;
+}
+
 export default function StudentDashboard() {
     const { logout, user } = useAuth();
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [analysisResult, setAnalysisResult] = useState<any>(null);
+    const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,9 +71,9 @@ export default function StudentDashboard() {
                 const errData = await response.json();
                 throw new Error(errData.detail || "Upload failed");
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Upload error:", err);
-            setError(err.message || "Something went wrong while analyzing your resume.");
+            setError(err instanceof Error ? err.message : "Something went wrong while analyzing your resume.");
 
             // MOCK DATA for demonstration if backend fails
             setTimeout(() => {
@@ -139,7 +152,7 @@ export default function StudentDashboard() {
                         animate={{ opacity: 1, x: 0 }}
                         className="text-4xl font-extrabold mb-2"
                     >
-                        Welcome, <span className="text-blue-500">Talent</span>
+                        Welcome, <span className="text-blue-500">{user?.full_name || "Talent"}</span>
                     </motion.h1>
                     <p className="text-muted-foreground">Analyze your resume and unlock strategic career insights.</p>
                 </header>
@@ -199,7 +212,7 @@ export default function StudentDashboard() {
                             <Brain className="w-8 h-8 text-blue-500 mb-4" />
                             <h4 className="font-bold text-lg mb-2">Pro Tip</h4>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                Include measurable achievements like "Increased efficiency by 30%" to get a higher AI alignment score.
+                                Include measurable achievements like &quot;Increased efficiency by 30%&quot; to get a higher AI alignment score.
                             </p>
                         </div>
                     </div>
@@ -310,7 +323,7 @@ export default function StudentDashboard() {
                                         <div className="space-y-4">
                                             {analysisResult.analysis.interview_questions.map((q: string, i: number) => (
                                                 <div key={i} className="p-4 bg-foreground/5 rounded-2xl border border-white/5 text-sm italic">
-                                                    "{q}"
+                                                    &quot;{q}&quot;
                                                 </div>
                                             ))}
                                         </div>

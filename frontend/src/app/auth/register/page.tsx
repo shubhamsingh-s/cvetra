@@ -6,13 +6,16 @@ import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase, Buildin
 import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+
+function getInitialRole(): UserRole {
+    if (typeof window === "undefined") return "student";
+
+    const role = new URLSearchParams(window.location.search).get("role");
+    return role === "recruiter" ? "recruiter" : "student";
+}
 
 export default function RegisterPage() {
-    const searchParams = useSearchParams();
-    const initialRole = (searchParams.get("role") as UserRole) || "student";
-
-    const [role, setRole] = useState<UserRole>(initialRole);
+    const [role, setRole] = useState<UserRole>(getInitialRole);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fullName, setFullName] = useState("");

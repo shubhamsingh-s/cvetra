@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-poppins: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  --font-inter: "Segoe UI", system-ui, sans-serif;
   --background: #ffffff;
   --foreground: #09090b;
   --card: #ffffff;

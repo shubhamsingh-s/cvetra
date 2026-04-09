@@ -7,8 +7,15 @@ import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+function getInitialRole(): UserRole {
+    if (typeof window === "undefined") return "student";
+
+    const role = new URLSearchParams(window.location.search).get("role");
+    return role === "recruiter" ? "recruiter" : "student";
+}
+
 export default function LoginPage() {
-    const [role, setRole] = useState<UserRole>("student");
+    const [role, setRole] = useState<UserRole>(getInitialRole);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [companyName, setCompanyName] = useState("");
@@ -191,7 +198,7 @@ export default function LoginPage() {
                     </form>
 
                     <div className="mt-8 text-center text-sm text-muted-foreground">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link href={`/auth/register?role=${role}`} className="text-blue-500 font-semibold hover:underline">
                             Create one for free
                         </Link>
