@@ -85,6 +85,10 @@ export const resumes = {
  * Matches & Ranking API
  */
 export const matches = {
+  create: (matchData: any) => request('/api/matches', {
+    method: 'POST',
+    body: JSON.stringify(matchData),
+  }),
   getRanking: (jobId: string) => request(`/api/matches/ranking?jobId=${jobId}`),
   performAction: (matchId: string, action: 'shortlist' | 'invite') => request(`/api/matches/${matchId}/action`, {
     method: 'POST',
