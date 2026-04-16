@@ -9,8 +9,6 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18
-      - key: PORT
-        value: "5000"
   - type: web
     name: talentiq-ai-engine
     env: python
@@ -21,6 +19,4 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
-      - key: PORT
-        value: "8001"
   # Note: Node backend is exposed as `talentiq-backend` above. The Python backend (legacy) remains in `/backend` folder if needed.
