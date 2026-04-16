@@ -1,3 +1,16 @@
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+
+export async function apiFetch(path: string, opts: RequestInit = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    ...opts,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+  return res.json().catch(() => null);
+}
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
 
 export async function analyzeResume(file: File, jdText: string) {

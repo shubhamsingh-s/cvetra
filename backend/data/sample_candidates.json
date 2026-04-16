@@ -1,0 +1,32 @@
+[
+  {
+    "id": "c1",
+    "name": "Aisha Khan",
+    "email": "aisha@example.com",
+    "skills": ["Python", "Django", "NLP", "spaCy"],
+    "ats_score": 87,
+    "semantic_score": 0.82,
+    "experience_years": 4,
+    "resume_snippet": "Experienced NLP engineer with 4 years building text pipelines..."
+  },
+  {
+    "id": "c2",
+    "name": "Ravi Patel",
+    "email": "ravi@example.com",
+    "skills": ["JavaScript", "React", "Node.js"],
+    "ats_score": 74,
+    "semantic_score": 0.65,
+    "experience_years": 3,
+    "resume_snippet": "Frontend engineer focusing on React and modern JS..."
+  },
+  {
+    "id": "c3",
+    "name": "Emily Chen",
+    "email": "emily@example.com",
+    "skills": ["Machine Learning", "PyTorch", "Data Science"],
+    "ats_score": 92,
+    "semantic_score": 0.88,
+    "experience_years": 6,
+    "resume_snippet": "Senior ML engineer with experience deploying models..."
+  }
+]

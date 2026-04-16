@@ -1,0 +1,101 @@
+name: Deploy Backend & AI Engine to Render
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq (for Render service lookup)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+      - name: Resolve Render service IDs (auto-detect by name with fuzzy matching)
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_NAME_BACKEND: ${{ secrets.RENDER_SERVICE_NAME_BACKEND }}
+          RENDER_SERVICE_NAME_AIENGINE: ${{ secrets.RENDER_SERVICE_NAME_AIENGINE }}
+          RENDER_SERVICE_ID_BACKEND: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
+          RENDER_SERVICE_ID_AIENGINE: ${{ secrets.RENDER_SERVICE_ID_AIENGINE }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "RENDER_API_KEY not set; cannot auto-detect service IDs"
+            exit 0
+          fi
+          # If explicit service IDs are provided as secrets, export them to GITHUB_ENV so later steps can use them
+          if [ -n "${{ secrets.RENDER_SERVICE_ID_BACKEND }}" ]; then echo "RENDER_SERVICE_ID_BACKEND=${{ secrets.RENDER_SERVICE_ID_BACKEND }}" >> $GITHUB_ENV; fi
+          if [ -n "${{ secrets.RENDER_SERVICE_ID_AIENGINE }}" ]; then echo "RENDER_SERVICE_ID_AIENGINE=${{ secrets.RENDER_SERVICE_ID_AIENGINE }}" >> $GITHUB_ENV; fi
+          if [ -n "${{ secrets.RENDER_SERVICE_ID_NODE }}" ]; then echo "RENDER_SERVICE_ID_NODE=${{ secrets.RENDER_SERVICE_ID_NODE }}" >> $GITHUB_ENV; fi
+
+          echo "Querying Render services..."
+          services=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" https://api.render.com/v1/services)
+          if [ -z "$services" ]; then
+            echo "No services response from Render API"
+            exit 0
+          fi
+
+          # Helper to find service id by various strategies
+          find_id() {
+            local wanted="$1"
+            # exact match
+            id=$(echo "$services" | jq -r --arg name "$wanted" '.[] | select(.name==$name) | .id' | head -n1)
+            if [ -n "$id" ] && [ "$id" != "null" ]; then echo "$id" && return 0; fi
+            # case-insensitive contains
+            id=$(echo "$services" | jq -r --arg name "$wanted" '.[] | select((.name|ascii_downcase) | contains(($name|ascii_downcase))) | .id' | head -n1)
+            if [ -n "$id" ] && [ "$id" != "null" ]; then echo "$id" && return 0; fi
+            # startswith (prefix)
+            id=$(echo "$services" | jq -r --arg name "$wanted" '.[] | select((.name|ascii_downcase) | startswith(($name|ascii_downcase))) | .id' | head -n1)
+            if [ -n "$id" ] && [ "$id" != "null" ]; then echo "$id" && return 0; fi
+            return 1
+          }
+
+          # Determine desired names (use custom mapping if provided)
+          backend_name=${RENDER_SERVICE_NAME_BACKEND:-talentiq-backend}
+          ai_name=${RENDER_SERVICE_NAME_AIENGINE:-talentiq-ai-engine}
+          # Only attempt lookup if not already set via secrets
+          if [ -z "$RENDER_SERVICE_ID_BACKEND" ]; then
+            bid=$(find_id "$backend_name" || true)
+            if [ -n "$bid" ]; then echo "RENDER_SERVICE_ID_BACKEND=$bid" >> $GITHUB_ENV; fi
+          fi
+          if [ -z "$RENDER_SERVICE_ID_AIENGINE" ]; then
+            aid=$(find_id "$ai_name" || true)
+            if [ -n "$aid" ]; then echo "RENDER_SERVICE_ID_AIENGINE=$aid" >> $GITHUB_ENV; fi
+          fi
+
+      - name: Trigger Render backend deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID_BACKEND: ${{ env.RENDER_SERVICE_ID_BACKEND }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID_BACKEND" ]; then
+            echo "Render backend service id not configured; skipping backend deploy"
+            exit 0
+          fi
+          echo "Triggering backend deploy (id=$RENDER_SERVICE_ID_BACKEND)..."
+          curl -s -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID_BACKEND/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' || true
+
+      - name: Trigger Render AI Engine deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID_AIENGINE: ${{ env.RENDER_SERVICE_ID_AIENGINE }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID_AIENGINE" ]; then
+            echo "Render AI engine service id not configured; skipping AI engine deploy"
+            exit 0
+          fi
+          echo "Triggering AI engine deploy (id=$RENDER_SERVICE_ID_AIENGINE)..."
+          curl -s -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID_AIENGINE/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' || true
+
+      # Node backend is deployed as the main `talentiq-backend` service above; no separate Node deploy step required.

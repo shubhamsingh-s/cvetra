@@ -1,13 +1,26 @@
 services:
   - type: web
     name: talentiq-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: "cd backend_node && npm ci"
+    startCommand: "cd backend_node && npm start"
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: "5000"
+  - type: web
+    name: talentiq-ai-engine
     env: python
     region: oregon
     plan: free
-    buildCommand: "pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt"
-    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: "pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r ai-engine/requirements.txt"
+    startCommand: "cd ai-engine && gunicorn -k uvicorn.workers.UvicornWorker ai-engine.main:app -b 0.0.0.0:$PORT --workers 1"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
-      - key: GEMINI_API_KEY
-        sync: false # Set manually in Render dashboard
+      - key: PORT
+        value: "8001"
+  # Note: Node backend is exposed as `talentiq-backend` above. The Python backend (legacy) remains in `/backend` folder if needed.
