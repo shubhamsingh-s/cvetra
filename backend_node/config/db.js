@@ -15,10 +15,10 @@ async function connectWithRetry(retries = MAX_RETRIES) {
     logger.info('MongoDB connected');
     await ensureIndexes();
   } catch (err) {
-    logger.error('MongoDB connection error: %s', err.message);
+    logger.error(`MongoDB connection error: ${err.message}`);
     if (retries > 0) {
       const backoff = (MAX_RETRIES - retries + 1) * 1000;
-      logger.info('Retrying MongoDB connection in %dms', backoff);
+      logger.info(`Retrying MongoDB connection in ${backoff}ms`);
       await new Promise((res) => setTimeout(res, backoff));
       return connectWithRetry(retries - 1);
     }

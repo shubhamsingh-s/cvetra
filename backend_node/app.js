@@ -42,7 +42,7 @@ connectWithRetry().then(() => {
     logger.info(`Backend (Node) running on port ${port}`);
   });
 }).catch((err) => {
-  logger.error('Failed to start server due to DB error: %s', err.message);
+  logger.error(`Failed to start server due to DB error: ${err.message}`);
   process.exit(1);
 });
 
