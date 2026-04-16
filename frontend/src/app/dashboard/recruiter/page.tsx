@@ -1,6 +1,6 @@
 
 "use client";
-
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
     Users,
@@ -55,6 +55,26 @@ export default function RecruiterDashboard() {
         },
     ];
 
+    const [stats, setStats] = useState({ jobs: 0, candidates: 0, matches: 0 });
+
+    useEffect(() => {
+        import("@/lib/api").then(({ jobs: jobsApi, matches: matchesApi }) => {
+            jobsApi.list().then(data => {
+                const activeJobs = data.jobs || [];
+                // Load counts
+                let totalC = 0, highMatches = 0;
+                Promise.all(activeJobs.map((j: any) => matchesApi.getRanking(j._id).catch(() => ({ candidates: [] }))))
+                    .then(results => {
+                        results.forEach((r: any) => {
+                            totalC += (r.candidates || []).length;
+                            highMatches += (r.candidates || []).filter((c:any) => (c.matchScore || c.semanticScore || 0) > 0.8).length;
+                        });
+                        setStats({ jobs: activeJobs.length, candidates: totalC, matches: highMatches });
+                    });
+            });
+        });
+    }, []);
+
     return (
         <div className="min-h-screen bg-background text-foreground font-sans">
             <ModeToggle />
@@ -86,7 +106,7 @@ export default function RecruiterDashboard() {
                 <div className="p-4 border-t border-white/10">
                     <button
                         onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all"
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
                     >
                         <LogOut className="w-5 h-5" />
                         <span className="font-medium hidden md:block">Logout</span>
@@ -108,9 +128,9 @@ export default function RecruiterDashboard() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {[
-                        { label: "Active Jobs", value: "12", icon: Briefcase, color: "text-blue-500" },
-                        { label: "Total Candidates", value: "840", icon: Users, color: "text-purple-500" },
-                        { label: "AI Matches", value: "48", icon: Star, color: "text-yellow-500" },
+                        { label: "Active Jobs", value: stats.jobs, icon: Briefcase, color: "text-blue-500" },
+                        { label: "Total Candidates", value: stats.candidates, icon: Users, color: "text-purple-500" },
+                        { label: "AI Matches", value: stats.matches, icon: Star, color: "text-yellow-500" },
                         { label: "Growth", value: "+12%", icon: BarChart3, color: "text-green-500" },
                     ].map((stat, i) => (
                         <motion.div
