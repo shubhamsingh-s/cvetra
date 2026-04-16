@@ -2,8 +2,8 @@ import os
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from .resume_parser import extract_text_from_file, normalize_text, extract_skills
-from .matcher import score_resume
+from resume_parser import extract_text_from_file, normalize_text, extract_skills
+from matcher import score_resume
 
 app = FastAPI(title='AI Engine', version='0.1')
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'], allow_headers=['*'])
@@ -41,4 +41,4 @@ async def analyze_text(resume_text: str = Form(...), jd_text: str = Form('')):
 if __name__ == '__main__':
     import uvicorn
     port = int(os.getenv('PORT', 8001))
-    uvicorn.run('ai-engine.main:app', host='0.0.0.0', port=port, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=port, reload=True)
