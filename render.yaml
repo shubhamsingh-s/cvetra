@@ -17,7 +17,7 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r ai-engine/requirements.txt"
-    startCommand: "cd ai-engine && gunicorn -k uvicorn.workers.UvicornWorker ai-engine.main:app -b 0.0.0.0:$PORT --workers 1"
+    startCommand: "cd ai-engine && gunicorn -k uvicorn.workers.UvicornWorker main:app -b 0.0.0.0:$PORT --workers 1"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
