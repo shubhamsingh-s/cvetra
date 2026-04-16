@@ -1,39 +1,35 @@
 from typing import Dict, Any, List
-from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from .resume_parser import extract_keywords, extract_skills, extract_years_of_experience, normalize_text
 
-_embedder = None
-
-def _get_embedder():
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer('all-MiniLM-L6-v2')
-    return _embedder
-
-def _cosine(a: np.ndarray, b: np.ndarray) -> float:
-    if np.linalg.norm(a) == 0 or np.linalg.norm(b) == 0:
+# Global vectorizer for caching if needed, but TF-IDF is so fast we can run it per request for stability
+def _compute_tfidf_similarity(resume_text: str, jd_text: str) -> float:
+    if not jd_text.strip() or not resume_text.strip():
         return 0.0
-    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
-
-def compute_embedding(text: str) -> List[float]:
-    model = _get_embedder()
-    vec = model.encode([text[:2000]])[0]
-    return vec.tolist()
-
-def compute_similarity(resume_text: str, jd_text: str) -> float:
-    a = np.array(compute_embedding(resume_text))
-    b = np.array(compute_embedding(jd_text))
-    return _cosine(a, b)
+    
+    try:
+        vectorizer = TfidfVectorizer(stop_words='english', lowercase=True)
+        # Combine both to ensure the same vocabulary
+        tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
+        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        return float(similarity)
+    except Exception as e:
+        print(f"Similarity error: {e}")
+        return 0.0
 
 def keyword_match_score(resume_text: str, jd_text: str) -> float:
+    # Use normalized text for keyword matching
     jd_keywords = extract_keywords([jd_text], top_k=50)
     resume_keywords = extract_keywords([resume_text], top_k=200)
+    
     jd_set = set([k.lower() for k in jd_keywords])
     res_set = set([k.lower() for k in resume_keywords])
+    
     matched = jd_set & res_set
     pct = len(matched) / max(len(jd_set), 1)
+    
     return pct, list(matched), list(jd_set - res_set)
 
 def formatting_score(resume_text: str) -> float:
@@ -49,16 +45,21 @@ def section_completeness(resume_text: str) -> Dict[str, bool]:
 def score_resume(resume_text: str, jd_text: str) -> Dict[str, Any]:
     rtext = normalize_text(resume_text)
     jtext = normalize_text(jd_text)
-    semantic = compute_similarity(rtext, jtext)
+    
+    # NEW: Highly memory-efficient TF-IDF similarity
+    semantic = _compute_tfidf_similarity(rtext, jtext)
+    
     kw_pct, matched, missing = keyword_match_score(rtext, jtext)
     fmt = formatting_score(rtext)
     sections = section_completeness(rtext)
     years = extract_years_of_experience(rtext)
 
     # Simple weighted ATS score
-    semantic_w = 0.45
-    keyword_w = 0.35
-    format_w = 0.2
+    # We increase the semantic weight slightly since TF-IDF is more "keyword-string" based
+    semantic_w = 0.50
+    keyword_w = 0.30
+    format_w = 0.20
+    
     ats = round((semantic * 100) * semantic_w + (kw_pct * 100) * keyword_w + (fmt * 100) * format_w)
 
     return {
