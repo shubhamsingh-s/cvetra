@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/auth-context";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Talentverse | Choose Your Role",
