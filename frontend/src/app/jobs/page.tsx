@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Plus, Clock, MapPin, Search, Filter, Rocket } from "lucide-react";
+import { Briefcase, Plus, Clock, MapPin, Search, Filter, Rocket, CheckCircle2 } from "lucide-react";
 import { jobs as jobsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -11,6 +11,9 @@ export default function JobsPage() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -26,6 +29,14 @@ export default function JobsPage() {
     }
     load();
   }, []);
+
+  const handleApply = async (jobId: string) => {
+    setApplyingId(jobId);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setAppliedJobs(prev => new Set(prev).add(jobId));
+    setApplyingId(null);
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground p-6 md:p-12 relative overflow-hidden">
@@ -99,15 +110,39 @@ export default function JobsPage() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
                          <Link 
                             href={`/upload?jobId=${j._id}`}
-                            className="px-8 py-3 bg-foreground/5 hover:bg-foreground/10 border border-white/10 rounded-xl font-bold text-sm transition-all"
+                            className="w-full sm:w-auto px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-white/10 rounded-xl font-bold text-sm transition-all text-center"
                          >
-                            Quick Scan
+                            AI Quick Scan
                          </Link>
-                         <button className="p-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-all">
-                             <Rocket className="w-5 h-5" />
+                         <button 
+                            onClick={() => handleApply(j._id)}
+                            disabled={appliedJobs.has(j._id) || applyingId === j._id}
+                            className={cn(
+                                "w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2",
+                                appliedJobs.has(j._id) 
+                                    ? "bg-green-500/20 text-green-500 border border-green-500/30 cursor-default" 
+                                    : "bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-500 active:scale-95 disabled:opacity-50"
+                            )}
+                         >
+                            {applyingId === j._id ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    <span>Applying...</span>
+                                </>
+                            ) : appliedJobs.has(j._id) ? (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    <span>Applied</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Rocket className="w-4 h-4" />
+                                    <span>Apply Now</span>
+                                </>
+                            )}
                          </button>
                     </div>
                   </div>
@@ -118,6 +153,7 @@ export default function JobsPage() {
         </div>
       </div>
     </main>
+
   );
 }
 
