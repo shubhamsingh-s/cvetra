@@ -3,6 +3,13 @@ const helmet = require('helmet');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const logger = require('winston');
+// Add default console transport to avoid "no transports" warning
+logger.add(new logger.transports.Console({
+  format: logger.format.combine(
+    logger.format.colorize(),
+    logger.format.simple()
+  )
+}));
 require('dotenv').config();
 
 const { connectWithRetry } = require('./config/db');
