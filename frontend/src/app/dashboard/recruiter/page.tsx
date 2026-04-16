@@ -1,4 +1,22 @@
 "use client";
+import Link from "next/link";
+
+export default function RecruiterDashboard() {
+  return (
+    <section className="max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Recruiter Dashboard</h1>
+        <Link href="/jobs/new" className="px-3 py-2 bg-blue-600 text-white rounded">Post Job</Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="glass p-4 rounded">Shortlisted candidates</div>
+        <div className="glass p-4 rounded">Recent activity</div>
+      </div>
+    </section>
+  );
+}
+"use client";
 
 import { motion } from "framer-motion";
 import {

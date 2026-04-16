@@ -1,4 +1,36 @@
 "use client";
+import { useEffect, useState } from "react";
+import CandidateTable from "@/components/CandidateTable";
+
+export default function PipelinePage() {
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/matches/ranking?jobId=');
+        if (!res.ok) throw new Error('No API');
+        const data = await res.json();
+        if (mounted) setCandidates(data.candidates || []);
+      } catch (e) {
+        // ignore
+      } finally { if (mounted) setLoading(false); }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  return (
+    <section className="max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Candidate Ranking</h1>
+      {loading ? <div>Loading...</div> : <CandidateTable candidates={candidates.map((c:any) => ({ id: c._id, name: c.user?.name || 'Unknown', email: c.user?.email || '', skills: c.resume?.extractedSkills || [], ats_score: c.resume?.atsScore || 0, semantic_score: c.semanticScore || 0, experience_years: c.resume?.experienceYears || 0, resume_snippet: c.resume?.parsedText?.slice(0,200) }))} />}
+    </section>
+  );
+}
+"use client";
 
 "use client";
 
