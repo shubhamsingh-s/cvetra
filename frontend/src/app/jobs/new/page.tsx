@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { jobs } from "@/lib/api";
 
 export default function NewJobPage() {
   const [title, setTitle] = useState('');
@@ -12,7 +12,7 @@ export default function NewJobPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiFetch('/jobs', { method: 'POST', body: JSON.stringify({ title, description: desc, recruiterId: null }) });
+      await jobs.create({ title, description: desc, recruiterId: null });
       setMsg('Job posted');
       setTitle(''); setDesc('');
     } catch (err: any) {
