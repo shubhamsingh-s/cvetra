@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from .resume_parser import extract_keywords, extract_skills, extract_years_of_experience, normalize_text
+from resume_parser import extract_keywords, extract_skills, extract_years_of_experience, normalize_text
 
 # Global vectorizer for caching if needed, but TF-IDF is so fast we can run it per request for stability
 def _compute_tfidf_similarity(resume_text: str, jd_text: str) -> float:
