@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { User, Mail, Lock, ArrowRight, Rocket, GraduationCap, Briefcase, Building2 } from "lucide-react";
 import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/api";
 import Link from "next/link";
 
 function getInitialRole(): UserRole {
@@ -27,21 +28,32 @@ export default function RegisterPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        setTimeout(() => {
-            login({
-                token: `mock-token-${role}`,
-                user: {
-                    id: `${role}-${email || "new-user"}`,
-                    email,
-                    full_name: fullName,
-                    role,
-                    company_name: role === "recruiter" ? companyName : undefined,
-                    is_active: true,
-                    is_superuser: false,
-                },
+        try {
+            const data = await auth.register({
+                name: fullName,
+                email,
+                password,
+                role,
+                company_name: role === "recruiter" ? companyName : undefined,
             });
+
+            if (data.status === "ok") {
+                // After registration, log them in or redirect to login
+                // Here we'll just log them in since we have the user data (though usually register returns {status, user})
+                // The backend register returns {status, user: {id, email}} - it doesn't return a token.
+                // So we'll redirect to login page with a success message.
+                alert("Account created successfully! Please sign in.");
+                const loginPath = `/auth/login?role=${role}`;
+                window.location.href = loginPath;
+            } else {
+                alert(data.error || "Registration failed");
+            }
+        } catch (error: any) {
+            console.error("Registration error:", error);
+            alert(error.message || "Something went wrong during registration");
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (

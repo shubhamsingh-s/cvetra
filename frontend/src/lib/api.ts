@@ -1,72 +1,97 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+/**
+ * API Integration Utility
+ * Handles all backend communication for TalentVerse
+ */
 
-export async function apiFetch(path: string, opts: RequestInit = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-    ...opts,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || res.statusText);
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+/**
+ * Generic Fetch Wrapper
+ */
+async function request(path: string, options: RequestInit = {}) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  // If body is FormData, remove Content-Type to let fetch set it with boundary
+  if (options.body instanceof FormData) {
+    delete (headers as any)['Content-Type'];
   }
-  return res.json().catch(() => null);
-}
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
-
-export async function analyzeResume(file: File, jdText: string) {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('jd_text', jdText);
 
   try {
-    const res = await fetch(`${API_URL}/api/resume/analyze`, {
-      method: 'POST',
-      body: form,
+    const response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
     });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.detail || 'Failed to analyze resume');
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(data?.error || data?.message || response.statusText || "Request failed");
     }
 
-    return await res.json();
+    return data;
   } catch (error) {
-    console.error("API Call Error:", error);
+    console.error(`API Error [${path}]:`, error);
     throw error;
   }
 }
 
-export async function predictText(text: string) {
-  try {
-    const res = await fetch(`${API_URL}/api/nlp/predict`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
-    if (!res.ok) {
-      throw new Error('NLP predict failed');
-    }
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
+/**
+ * Auth API
+ */
+export const auth = {
+  login: (credentials: any) => request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  }),
+  register: (userData: any) => request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  }),
+};
 
-export async function trainModel(texts: string[], labels: string[]) {
-  try {
-    const res = await fetch(`${API_URL}/api/nlp/train`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts, labels }),
-    });
-    if (!res.ok) {
-      throw new Error('NLP train failed');
-    }
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
+/**
+ * Jobs API
+ */
+export const jobs = {
+  create: (jobData: any) => request('/api/jobs', {
+    method: 'POST',
+    body: JSON.stringify(jobData),
+  }),
+  list: () => request('/api/jobs'),
+  getById: (id: string) => request(`/api/jobs/${id}`),
+};
 
+/**
+ * Resumes API
+ */
+export const resumes = {
+  upload: (formData: FormData) => request('/api/resumes/upload-resume', {
+    method: 'POST',
+    body: formData,
+  }),
+  analyze: (resumeId: string, jdText: string) => request('/api/resumes/analyze-resume', {
+    method: 'POST',
+    body: JSON.stringify({ resumeId, jd_text: jdText }),
+  }),
+};
+
+/**
+ * Matches & Ranking API
+ */
+export const matches = {
+  getRanking: (jobId: string) => request(`/api/matches/ranking?jobId=${jobId}`),
+  performAction: (matchId: string, action: 'shortlist' | 'invite') => request(`/api/matches/${matchId}/action`, {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  }),
+  export: (jobId: string, shortlistedOnly = false) => {
+    // Return the URL for direct download or use window.location
+    return `${API_URL}/api/matches/export?jobId=${jobId}&shortlisted=${shortlistedOnly}`;
+  }
+};

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight, Rocket, Briefcase, GraduationCap, Building2 } from "lucide-react";
 import { UserRole, useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/api";
 import Link from "next/link";
 
 function getInitialRole(): UserRole {
@@ -26,52 +27,19 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        const mockUser = {
-            id: `${role}-${email || "demo"}`,
-            email,
-            full_name: role === "student" ? "Student User" : "Recruiter User",
-            role,
-            company_name: role === "recruiter" ? companyName : undefined,
-            is_active: true,
-            is_superuser: false,
-        } as const;
-
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-            const response = await fetch(`${API_URL}/api/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    role,
-                    company_name: role === "recruiter" ? companyName : undefined,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json().catch(() => null);
+            const data = await auth.login({ email, password });
+            if (data.status === "ok") {
                 login({
-                    token: data?.access_token || `mock-token-${role}`,
-                    user: {
-                        ...mockUser,
-                        email: data?.email || email,
-                        role: (data?.role as UserRole) || role,
-                        company_name: data?.company_name || mockUser.company_name,
-                    },
+                    token: data.token,
+                    user: data.user,
                 });
             } else {
-                login({
-                    token: `mock-token-${role}`,
-                    user: mockUser,
-                });
+                alert(data.error || "Login failed");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login error:", error);
-            login({
-                token: `mock-token-${role}`,
-                user: mockUser,
-            });
+            alert(error.message || "Something went wrong during login");
         } finally {
             setIsLoading(false);
         }
