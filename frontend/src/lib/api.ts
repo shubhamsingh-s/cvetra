@@ -8,7 +8,7 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000
 /**
  * Generic Fetch Wrapper
  */
-async function request(path: string, options: RequestInit = {}) {
+export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   
   const headers: HeadersInit = {
@@ -45,11 +45,11 @@ async function request(path: string, options: RequestInit = {}) {
  * Auth API
  */
 export const auth = {
-  login: (credentials: any) => request('/api/auth/login', {
+  login: (credentials: any) => apiFetch('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   }),
-  register: (userData: any) => request('/api/auth/register', {
+  register: (userData: any) => apiFetch('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   }),
@@ -59,23 +59,23 @@ export const auth = {
  * Jobs API
  */
 export const jobs = {
-  create: (jobData: any) => request('/api/jobs', {
+  create: (jobData: any) => apiFetch('/api/jobs', {
     method: 'POST',
     body: JSON.stringify(jobData),
   }),
-  list: () => request('/api/jobs'),
-  getById: (id: string) => request(`/api/jobs/${id}`),
+  list: () => apiFetch('/api/jobs'),
+  getById: (id: string) => apiFetch(`/api/jobs/${id}`),
 };
 
 /**
  * Resumes API
  */
 export const resumes = {
-  upload: (formData: FormData) => request('/api/resumes/upload-resume', {
+  upload: (formData: FormData) => apiFetch('/api/resumes/upload-resume', {
     method: 'POST',
     body: formData,
   }),
-  analyze: (resumeId: string, jdText: string) => request('/api/resumes/analyze-resume', {
+  analyze: (resumeId: string, jdText: string) => apiFetch('/api/resumes/analyze-resume', {
     method: 'POST',
     body: JSON.stringify({ resumeId, jd_text: jdText }),
   }),
@@ -85,12 +85,12 @@ export const resumes = {
  * Matches & Ranking API
  */
 export const matches = {
-  create: (matchData: any) => request('/api/matches', {
+  create: (matchData: any) => apiFetch('/api/matches', {
     method: 'POST',
     body: JSON.stringify(matchData),
   }),
-  getRanking: (jobId: string) => request(`/api/matches/ranking?jobId=${jobId}`),
-  performAction: (matchId: string, action: 'shortlist' | 'invite') => request(`/api/matches/${matchId}/action`, {
+  getRanking: (jobId: string) => apiFetch(`/api/matches/ranking?jobId=${jobId}`),
+  performAction: (matchId: string, action: 'shortlist' | 'invite') => apiFetch(`/api/matches/${matchId}/action`, {
     method: 'POST',
     body: JSON.stringify({ action }),
   }),

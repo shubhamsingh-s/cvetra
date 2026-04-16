@@ -262,7 +262,7 @@ export default function RecruiterResumeCheckPage() {
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" /> Processing Batch...
                                     </>
-                                ) : files.every(f => f.status === "success" && f.status !== "pending") && files.length > 0 ? (
+                                ) : files.every(f => f.status === "success") && files.length > 0 ? (
                                     <>All Processed</>
                                 ) : (
                                     <>Start Processing</>

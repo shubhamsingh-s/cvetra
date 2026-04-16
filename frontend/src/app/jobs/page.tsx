@@ -72,7 +72,7 @@ export default function JobsPage() {
             </div>
           ) : (
             jobs.map((j) => (
-              <motion_wrapper key={j._id}>
+              <div key={j._id}>
                 <div className="glass group rounded-[2rem] p-8 border border-white/10 hover:border-blue-500/30 transition-all duration-500 cursor-pointer shadow-xl hover:shadow-blue-500/5">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1 space-y-4">
@@ -112,7 +112,7 @@ export default function JobsPage() {
                     </div>
                   </div>
                 </div>
-              </motion_wrapper>
+              </div>
             ))
           )}
         </div>
