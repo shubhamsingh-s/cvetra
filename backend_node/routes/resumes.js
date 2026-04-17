@@ -56,4 +56,18 @@ router.post('/analyze-resume', async (req, res) => {
   }
 });
 
+// Get latest resume for a user
+router.get('/user/:userId/latest', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const resume = await Resume.findOne({ userId }).sort({ createdAt: -1 });
+    if (!resume) {
+      return res.status(404).json({ error: 'No resume found for this user' });
+    }
+    return res.json({ status: 'ok', resume });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

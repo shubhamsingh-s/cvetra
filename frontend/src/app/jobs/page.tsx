@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Plus, Clock, MapPin, Search, Filter, Rocket, CheckCircle2 } from "lucide-react";
+import { Briefcase, Plus, Clock, MapPin, Search, Filter, Rocket, CheckCircle2, Trash2 } from "lucide-react";
 import { jobs as jobsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -45,6 +45,17 @@ export default function JobsPage() {
         alert(e.message || "Failed to submit application.");
     } finally {
         setApplyingId(null);
+    }
+  };
+
+  const handleDelete = async (jobId: string) => {
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    try {
+        await jobsApi.delete(jobId);
+        setJobs(prev => prev.filter(j => j._id !== jobId));
+    } catch (e: any) {
+        console.error("Delete error:", e);
+        alert(e.message || "Failed to delete job.");
     }
   };
 
@@ -121,6 +132,18 @@ export default function JobsPage() {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-center gap-3">
+                         {user?.role === "recruiter" && (
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(j._id);
+                                }}
+                                className="w-full sm:w-auto p-3 text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-all"
+                                title="Delete Job"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                         )}
                          <Link 
                             href={`/upload?jobId=${j._id}`}
                             className="w-full sm:w-auto px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-white/10 rounded-xl font-bold text-sm transition-all text-center"

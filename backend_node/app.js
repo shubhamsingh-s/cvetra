@@ -18,6 +18,7 @@ const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const resumeRoutes = require('./routes/resumes');
 const matchRoutes = require('./routes/matches');
+const applicationRoutes = require('./routes/applications');
 
 const app = express();
 app.use(helmet());
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/applications', applicationRoutes);
 
 app.get('/health', (req, res) => {
   const ok = require('mongoose').connection.readyState === 1;

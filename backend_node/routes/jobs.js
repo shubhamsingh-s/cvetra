@@ -21,4 +21,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Match = require('../models/Match');
+    
+    // Delete the job
+    const job = await Job.findByIdAndDelete(id);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Delete associated matches
+    await Match.deleteMany({ jobId: id });
+
+    res.json({ status: 'ok', message: 'Job and associated matches deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
