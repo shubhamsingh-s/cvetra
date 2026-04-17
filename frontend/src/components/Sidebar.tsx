@@ -27,7 +27,7 @@ const menuItems = [
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   return (
     <motion.aside
@@ -53,7 +53,10 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex flex-col gap-2">
-          {menuItems.map((item) => {
+          {menuItems.filter(item => {
+            if (item.name === "Recruiter") return user?.role === "recruiter";
+            return true;
+          }).map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
 

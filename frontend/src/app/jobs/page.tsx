@@ -31,11 +31,21 @@ export default function JobsPage() {
   }, []);
 
   const handleApply = async (jobId: string) => {
+    if (!user) {
+        alert("Please login to apply for jobs.");
+        return;
+    }
     setApplyingId(jobId);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setAppliedJobs(prev => new Set(prev).add(jobId));
-    setApplyingId(null);
+    try {
+        const { applications: applicationsApi } = await import("@/lib/api");
+        await applicationsApi.apply(user.id, jobId);
+        setAppliedJobs(prev => new Set(prev).add(jobId));
+    } catch (e: any) {
+        console.error("Application error:", e);
+        alert(e.message || "Failed to submit application.");
+    } finally {
+        setApplyingId(null);
+    }
   };
 
   return (
@@ -58,7 +68,7 @@ export default function JobsPage() {
           {user?.role === "recruiter" && (
             <Link 
                 href="/dashboard/recruiter/postjob" 
-                className="inline-flex items-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/25 hover:bg-blue-500 transition-all hover:-translate-y-1"
+                className="hidden md:inline-flex items-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/25 hover:bg-blue-500 transition-all hover:-translate-y-1"
             >
                 <Plus className="w-5 h-5" />
                 Post New Job
