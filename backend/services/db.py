@@ -36,6 +36,18 @@ def get_candidates_collection():
     return get_db()['candidates']
 
 
+def get_users_collection():
+    return get_db()['users']
+
+
+def get_resumes_collection():
+    return get_db()['resumes']
+
+
+def get_matches_collection():
+    return get_db()['matches']
+
+
 async def ensure_indexes():
     """Create useful indexes for jobs and candidates collections.
 
