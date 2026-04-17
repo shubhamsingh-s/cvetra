@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ClipboardList, Users, Download, Filter, Search, Briefcase, Target } from "lucide-react";
+import { ArrowLeft, ClipboardList, Users, Download, Filter, Search, Briefcase, Target, Trash2 } from "lucide-react";
 import { matches as matchesApi, jobs as jobsApi } from "@/lib/api";
 import CandidateTable from "@/components/CandidateTable";
 import { cn } from "@/lib/utils";
@@ -70,6 +70,24 @@ export default function PipelinePage() {
         window.open(url, '_blank');
     };
 
+    const handleDeleteJob = async () => {
+        if (!selectedJobId) return;
+        if (!window.confirm("Are you sure you want to delete this job and clear all its candidate matches? This action cannot be undone.")) return;
+        
+        setLoading(true);
+        try {
+            await jobsApi.delete(selectedJobId);
+            setJobs(prev => prev.filter(j => j._id !== selectedJobId));
+            setSelectedJobId(jobs.find(j => j._id !== selectedJobId)?._id || "");
+            alert("Job successfully deleted.");
+        } catch (e: any) {
+            console.error("Failed to delete job", e);
+            alert(e.message || "Failed to delete job");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (initialLoad) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -113,13 +131,22 @@ export default function PipelinePage() {
 
                                 <div className="flex items-center gap-4">
                                      {selectedJobId && (
-                                        <button 
-                                            onClick={handleExport}
-                                            className="flex items-center gap-2 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-white/10 rounded-2xl transition-all font-bold text-sm"
-                                        >
-                                            <Download className="w-4 h-4" />
-                                            Export CSV
-                                        </button>
+                                        <>
+                                            <button 
+                                                onClick={handleExport}
+                                                className="flex items-center gap-2 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-white/10 rounded-2xl transition-all font-bold text-sm"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                                Export CSV
+                                            </button>
+                                            <button 
+                                                onClick={handleDeleteJob}
+                                                className="flex items-center justify-center p-3 text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-2xl transition-all"
+                                                title="Delete Job"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </>
                                      )}
                                 </div>
                             </div>

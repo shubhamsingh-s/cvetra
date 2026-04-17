@@ -65,6 +65,7 @@ export const jobs = {
   }),
   list: () => apiFetch('/api/jobs'),
   getById: (id: string) => apiFetch(`/api/jobs/${id}`),
+  delete: (id: string) => apiFetch(`/api/jobs/${id}`, { method: 'DELETE' }),
 };
 
 /**
