@@ -54,56 +54,9 @@ export default function StudentDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-blue-500/30">
-            <ModeToggle />
-
-            {/* Premium Sidebar */}
-            <aside className="fixed left-0 top-0 h-full w-20 md:w-72 glass border-r border-white/10 z-50 flex flex-col transition-all duration-500 shadow-2xl">
-                <div className="p-8 flex items-center gap-4">
-                    <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/20">
-                        <Rocket className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="font-black text-2xl hidden md:block tracking-tighter italic">TALENT<span className="text-blue-500">VERSE</span></span>
-                </div>
-
-                <nav className="flex-1 px-4 py-8 space-y-3">
-                    {menuItems.map((item, idx) => (
-                        <Link
-                            key={idx}
-                            href={item.href}
-                            className={cn(
-                                "w-full flex items-center gap-4 px-5 py-4 rounded-[1.25rem] transition-all duration-300 group",
-                                item.active 
-                                    ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20" 
-                                    : "hover:bg-foreground/5 text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <item.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", item.active ? "text-white" : "text-blue-500/70")} />
-                            <span className="font-bold text-sm hidden md:block">{item.label}</span>
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="p-6 border-t border-white/10">
-                    <div className="bg-foreground/5 rounded-2xl p-4 mb-6 hidden md:block">
-                         <div className="flex items-center gap-3 mb-2">
-                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">AI Engine Active</span>
-                         </div>
-                         <p className="text-[10px] text-muted-foreground font-medium uppercase">v1.2 // Neural Matcher</p>
-                    </div>
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-500 hover:bg-red-500/10 transition-all font-bold group"
-                    >
-                        <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        <span className="text-sm hidden md:block">System Logout</span>
-                    </button>
-                </div>
-            </aside>
-
+        <div className="min-h-screen bg-transparent text-foreground font-sans selection:bg-blue-500/30">
             {/* Main Content */}
-            <main className="pl-20 md:pl-72 p-6 md:p-12 relative">
+            <div className="p-0 relative">
                 {/* Background Decor */}
                 <div className="absolute top-[10%] right-[10%] w-[50vw] h-[50vw] bg-blue-500/[0.03] blur-[150px] rounded-full pointer-events-none" />
 

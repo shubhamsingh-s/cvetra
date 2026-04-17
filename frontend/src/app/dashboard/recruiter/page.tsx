@@ -76,45 +76,9 @@ export default function RecruiterDashboard() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans">
-            <ModeToggle />
-
-            <aside className="fixed left-0 top-0 h-full w-20 md:w-64 glass border-r border-white/10 z-50 flex flex-col">
-                <div className="p-6 flex items-center gap-3">
-                    <div className="p-2 bg-slate-800 rounded-lg">
-                        <LayoutDashboard className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="font-bold text-xl hidden md:block">Recruiter Hub</span>
-                </div>
-
-                <nav className="flex-1 px-4 py-6 space-y-2">
-                    {quickActions.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                                item.active ? "bg-slate-800 text-white shadow-lg shadow-black/20" : "hover:bg-foreground/5 text-muted-foreground"
-                            )}
-                        >
-                            <item.icon className="w-5 h-5" />
-                            <span className="font-medium hidden md:block">{item.label}</span>
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-white/10">
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium hidden md:block">Logout</span>
-                    </button>
-                </div>
-            </aside>
-
-            <main className="pl-20 md:pl-64 p-6 md:p-12">
+        <div className="min-h-screen bg-transparent text-foreground font-sans">
+            {/* Main Content */}
+            <div className="p-0">
                 <header className="mb-12">
                     <motion.h1
                         initial={{ opacity: 0, x: -20 }}
