@@ -7,7 +7,7 @@ router.post('/apply', async (req, res) => {
   try {
     const { userId, jobId } = req.body;
     if (!userId || !jobId) {
-      return res.status(400).json({ detail: "Missing userId or jobId" });
+      return res.status(400).json({ error: "Missing userId or jobId" });
     }
 
     const aiUrl = process.env.AI_ENGINE_URL || 'http://localhost:8001';
@@ -22,15 +22,15 @@ router.post('/apply', async (req, res) => {
     const data = await r.json().catch(() => null);
 
     if (!r.ok) {
-        // Pass through the Python error detail
-        return res.status(r.status).json({ detail: data?.detail || data?.error || 'Target AI engine rejected request' });
+        // Pass through the Python error detail using "error" key for older cached clients
+        return res.status(r.status).json({ error: data?.detail || data?.error || 'Target AI engine rejected request' });
     }
 
     return res.json({ status: 'ok', match_id: data?.match_id, analysis: data?.analysis });
 
   } catch (err) {
     console.error("Application Proxy Error:", err);
-    return res.status(500).json({ detail: err.message || "Failed to reach AI engine" });
+    return res.status(500).json({ error: err.message || "Failed to reach AI engine" });
   }
 });
 
