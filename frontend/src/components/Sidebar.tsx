@@ -9,10 +9,12 @@ import {
   UserSearch, 
   Briefcase, 
   BarChart3, 
-  ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  LogOut,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const menuItems = [
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <motion.aside
@@ -105,15 +108,53 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-white/5 space-y-2">
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="bg-blue-500/5 rounded-2xl p-3 mb-2 border border-blue-500/10"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">AI Active</span>
+              </div>
+              <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">Neural Matcher v1.2</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all font-bold group/logout"
+        >
+          <div className="min-w-[24px] flex items-center justify-center">
+            <LogOut size={20} className="group-hover/logout:-translate-x-1 transition-transform" />
+          </div>
+          <AnimatePresence>
+            {isOpen && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-sm"
+              >
+                Logout
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-full py-3 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all group/btn"
+          className="flex items-center justify-center w-full py-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all group/btn"
         >
           {isOpen ? (
-            <div className="flex items-center gap-2">
-              <ChevronLeft size={18} className="group-hover/btn:-translate-x-1 transition-transform" />
-              <span className="text-sm">Collapse Sidebar</span>
+            <div className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
+              <ChevronLeft size={16} className="group-hover/btn:-translate-x-1 transition-transform" />
+              <span className="text-xs">Collapse</span>
             </div>
           ) : (
             <ChevronRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
