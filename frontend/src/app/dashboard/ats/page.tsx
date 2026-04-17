@@ -62,10 +62,17 @@ export default function ATSPage() {
             
             if (uploadData.status === 'ok') {
                 setStatus({ type: 'idle', message: 'AI Engine analyzing skills & experience...' });
-                const analysisData = await resumesApi.analyze(uploadData.resume._id, "General Tech Role Matching");
-                setAnalysis(analysisData.analysis);
-                setScore(analysisData.analysis.ats_score);
-                setStatus({ type: 'success', message: 'Intelligence scan complete!' });
+                const analysisData = await resumesApi.analyze(uploadData.resume._id, "General Tech Role Matching").catch(() => null);
+                
+                const finalAnalysis = analysisData?.analysis || analysisData; // handle different API response shapes
+                
+                if (finalAnalysis) {
+                    setAnalysis(finalAnalysis);
+                    setScore(finalAnalysis.ats_score || finalAnalysis.analysis?.ats_score || 0);
+                    setStatus({ type: 'success', message: 'Intelligence scan complete!' });
+                } else {
+                    throw new Error("AI engine returned empty analysis. Please try again.");
+                }
             }
         } catch (err: any) {
             setStatus({ type: 'error', message: err.message || 'Scan failed' });
