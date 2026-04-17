@@ -19,18 +19,25 @@ async def apply_job(payload: ApplyRequest):
     resumes = get_resumes_collection()
     jobs = get_jobs_collection()
 
+    # Validate Object IDs
+    try:
+        u_id = ObjectId(payload.userId)
+        j_id = ObjectId(payload.jobId)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid User ID or Job ID format")
+
     # 1. Fetch Student
-    user = await users.find_one({"_id": ObjectId(payload.userId)})
+    user = await users.find_one({"_id": u_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     # 2. Fetch Latest Resume
-    resume = await resumes.find_one({"userId": ObjectId(payload.userId)})
+    resume = await resumes.find_one({"userId": u_id})
     if not resume:
-        raise HTTPException(status_code=400, detail="No resume found for this student. Please upload one first.")
+        raise HTTPException(status_code=400, detail="No resume found. Please upload your resume first.")
 
     # 3. Fetch Job
-    job = await jobs.find_one({"_id": ObjectId(payload.jobId)})
+    job = await jobs.find_one({"_id": j_id})
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
