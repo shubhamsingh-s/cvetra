@@ -54,7 +54,10 @@ export default function Sidebar() {
 
         <nav className="flex flex-col gap-2">
           {menuItems.filter(item => {
-            if (item.name === "Recruiter") return user?.role === "recruiter";
+            // Only show Recruiter tab if explicitly logged in as a recruiter
+            if (item.name === "Recruiter") {
+              return user?.role === "recruiter";
+            }
             return true;
           }).map((item) => {
             const isActive = pathname === item.href;
