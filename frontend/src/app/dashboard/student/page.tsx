@@ -26,16 +26,21 @@ import Link from "next/link";
 
 export default function StudentDashboard() {
     const { logout, user } = useAuth();
-    const [stats, setStats] = useState({ totalJobs: 0, myResumes: 0 });
+    const [stats, setStats] = useState({ totalJobs: 0, myResumes: 0, profileScore: 0 });
     const [isLoadingStats, setIsLoadingStats] = useState(true);
 
     useEffect(() => {
         async function loadStats() {
             try {
-                const jobsData = await jobsApi.list();
+                const [jobsData, resumeData] = await Promise.all([
+                    jobsApi.list(),
+                    user?.id ? resumesApi.getLatestByUserId(user.id).catch(() => null) : null
+                ]);
+
                 setStats({
                     totalJobs: jobsData.jobs?.length || 0,
-                    myResumes: 0 // In a real app, we'd fetch user's resumes
+                    myResumes: resumeData?.resume ? 1 : 0,
+                    profileScore: resumeData?.resume?.atsScore || 0
                 });
             } catch (e) {
                 console.error("Failed to load dashboard stats", e);
@@ -44,7 +49,7 @@ export default function StudentDashboard() {
             }
         }
         loadStats();
-    }, []);
+    }, [user?.id]);
 
     const menuItems = [
         { icon: LayoutDashboard, label: "Overview", active: true, href: "/dashboard/student" },
@@ -91,7 +96,7 @@ export default function StudentDashboard() {
                             {[
                                 { label: "Job Postings", value: isLoadingStats ? "..." : stats.totalJobs, icon: Briefcase, color: "text-blue-500", bg: "bg-blue-500/10" },
                                 { label: "Live Matches", value: "24", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-                                { label: "Profile Score", value: "85%", icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
+                                { label: "Profile Score", value: isLoadingStats ? "..." : `${stats.profileScore}%`, icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
                             ].map((stat, i) => (
                                 <motion.div
                                     key={i}

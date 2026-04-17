@@ -79,6 +79,7 @@ export const resumes = {
     method: 'POST',
     body: JSON.stringify({ resumeId, jd_text: jdText }),
   }),
+  getLatestByUserId: (userId: string) => apiFetch(`/api/resumes/user/${userId}/latest`),
 };
 
 /**
