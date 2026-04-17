@@ -9,6 +9,7 @@ import {
   UserSearch, 
   Briefcase, 
   BarChart3, 
+  ChevronLeft,
   ChevronRight,
   LogOut,
   Zap
