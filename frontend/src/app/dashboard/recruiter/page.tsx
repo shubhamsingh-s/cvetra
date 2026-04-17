@@ -140,7 +140,7 @@ export default function RecruiterDashboard() {
                         </motion.div>
                     ))}
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

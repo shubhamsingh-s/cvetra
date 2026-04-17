@@ -203,7 +203,7 @@ export default function StudentDashboard() {
                          </motion.div>
                     </aside>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }
