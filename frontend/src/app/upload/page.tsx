@@ -96,11 +96,11 @@ export default function UploadPage() {
                             {analysisResult && (
                                 <div className="grid md:grid-cols-2 gap-6 mt-8">
                                     <div className="glass p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center text-center">
-                                        <div className="text-5xl font-black text-blue-500 mb-2">{analysisResult.ats_score}%</div>
+                                        <div className="text-5xl font-black text-blue-500 mb-2">{analysisResult?.ats_score || analysisResult?.analysis?.ats_score || 0}%</div>
                                         <div className="text-sm font-bold uppercase tracking-widest opacity-60">ATS Score</div>
                                     </div>
                                     <div className="glass p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center text-center">
-                                        <div className="text-5xl font-black text-purple-500 mb-2">{analysisResult.semantic_similarity ? Math.round(analysisResult.semantic_similarity * 100) : "N/A"}%</div>
+                                        <div className="text-5xl font-black text-purple-500 mb-2">{analysisResult?.semantic_similarity ? Math.round(analysisResult.semantic_similarity * 100) : "N/A"}%</div>
                                         <div className="text-sm font-bold uppercase tracking-widest opacity-60">JD Match</div>
                                     </div>
                                 </div>
