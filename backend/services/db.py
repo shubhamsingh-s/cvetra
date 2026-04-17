@@ -62,7 +62,9 @@ async def ensure_indexes():
         await jobs.create_index('title')
         # Compound index for candidate ranking/filtering: job_id + ats_score desc + semantic_score desc
         await candidates.create_index([('job_id', 1), ('analysis.ats_score', -1), ('analysis.semantic_score', -1)])
-        # Single-field index for job_id queries
+    # Single-field index for job_id queries
+        await db['matches'].create_index([('jobId', 1)])
+        await db['matches'].create_index([('resumeId', 1)])
         await candidates.create_index([('job_id', 1)])
     except Exception as e:
         logger.exception('Failed to ensure indexes: %s', e)

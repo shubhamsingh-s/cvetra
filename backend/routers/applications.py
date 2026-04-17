@@ -56,14 +56,20 @@ async def apply_job(payload: ApplyRequest):
 
     # 5. Save to Matches (Used by Recruiter Dashboard)
     # The Node.js ranking endpoint expects records in the 'matches' collection
+    # We use dual-key storage (jobId and job_id) for maximum compatibility
     match_record = {
         "resumeId": resume["_id"],
         "jobId": job["_id"],
+        "job_id": str(job["_id"]), # Fallback as string for Python-side queries
         "matchScore": int(analysis.get("ats_score", 0)),
         "semanticScore": float(analysis.get("semantic_score", 0.75)),
+        "skillMatch": int(analysis.get("skills_score", 0) * 100) if "skills_score" in analysis else 0,
         "shortlist": False,
         "invited": False,
-        "createdAt": datetime.datetime.utcnow()
+        "createdAt": datetime.datetime.utcnow(),
+        # Add metadata for direct display if population fails
+        "candidateName": user.get("name") or user.get("full_name") or "Student",
+        "candidateEmail": user.get("email")
     }
 
     matches_col = get_matches_collection()
