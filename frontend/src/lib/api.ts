@@ -99,3 +99,13 @@ export const matches = {
     return `${API_URL}/api/matches/export?jobId=${jobId}&shortlisted=${shortlistedOnly}`;
   }
 };
+
+/**
+ * Applications API (Student Side)
+ */
+export const applications = {
+  apply: (userId: string, jobId: string) => apiFetch('/api/applications/apply', {
+    method: 'POST',
+    body: JSON.stringify({ userId, jobId }),
+  }),
+};
