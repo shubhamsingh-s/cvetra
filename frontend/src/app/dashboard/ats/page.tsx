@@ -1,17 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
 import ATSProgress from "@/components/ATSProgress";
+import { useAuth } from "@/context/auth-context";
+import { resumes as resumesApi } from "@/lib/api";
 
 export default function ATSPage() {
+  const { user } = useAuth();
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
+      if (!user?.id) return;
       setLoading(true);
       try {
-        // placeholder: ideally call /resumes to get last uploaded resume
-        setScore(68);
+        const data = await resumesApi.getLatestByUserId(user.id).catch(() => null);
+        setScore(data?.resume?.atsScore || 0);
       } catch (e) {
         setScore(null);
       } finally {
@@ -19,7 +23,7 @@ export default function ATSPage() {
       }
     }
     load();
-  }, []);
+  }, [user?.id]);
 
   return (
     <section className="max-w-4xl mx-auto">
