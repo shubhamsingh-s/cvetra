@@ -5,26 +5,31 @@ genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 gemini = genai.GenerativeModel('gemini-1.5-flash')
 
 ANALYSIS_PROMPT = '''
-You are an expert ATS system and career coach.
-Analyze this resume. If a specific job description is provided, match against it. 
-IF ONLY a "General" or no job description is provided, perform a "Professional Excellence Audit" against industry benchmarks for top tech roles.
+SYSTEM PROMPT:
 
-Return ONLY valid JSON with these exact keys:
+You are a professional ATS engine used by top recruiters.
+
+Return ONLY valid JSON in this format:
+
 {{
-  "matched_skills": ["top skills found"],
-  "missing_skills": ["missing essential industry skills"],
-  "strengths": ["2-4 strength statements"],
-  "checklist": [
-    {{"title": "Add Profile Summary", "description": "Crucial for visibility", "impact_pts": 15, "priority": "High"}},
-    {{"title": "Quantify Impact", "description": "Use % and $ metrics", "impact_pts": 20, "priority": "High"}}
-  ],
-  "career_prediction": {{"next_role": "Senior Engineer", "salary_range": "$120k-$150k"}},
-  "scoring_metadata": {{
-    "skill_depth_score": 85,
-    "experience_match_score": 80,
-    "formatting_score": 90
-  }}
+  "candidate_name": "",
+  "ats_score": 0,
+  "final_verdict": "",
+  "match_breakdown": {{
+    "skills_match": 0,
+    "experience_match": 0,
+    "keyword_match": 0
+  }},
+  "missing_keywords": [],
+  "suggestions": []
 }}
+
+RULES:
+- ATS score must be realistic (0-100), not inflated
+- Base score strictly on resume vs job description
+- Missing keywords must be exact terms from JD
+- Suggestions must be actionable (bullet-based)
+- If JD not provided -> reduce accuracy and mention in suggestions
 
 Resume: {resume_text}
 JD/Context: {jd_text}
@@ -47,6 +52,14 @@ def analyze(resume_text: str, jd_text: str) -> dict:
     except Exception as e:
         print(f"Gemini Error: {e}")
         return {
+            "candidate_name": "Applicant",
             "ats_score": 0,
-            "checklist": [{"title": "Retry Scan", "description": "AI engine timeout", "impact_pts": 0, "priority": "Low"}]
+            "final_verdict": "Error processing scan",
+            "match_breakdown": {
+                "skills_match": 0,
+                "experience_match": 0,
+                "keyword_match": 0
+            },
+            "missing_keywords": [],
+            "suggestions": ["Retry Scan: AI engine timeout or parsing error"]
         }
