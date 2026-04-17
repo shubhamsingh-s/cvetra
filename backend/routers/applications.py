@@ -17,7 +17,6 @@ async def apply_job(payload: ApplyRequest):
     users = get_users_collection()
     resumes = get_resumes_collection()
     jobs = get_jobs_collection()
-    candidates = get_candidates_collection()
 
     # 1. Fetch Student
     user = await users.find_one({"_id": ObjectId(payload.userId)})
