@@ -1,10 +1,12 @@
 "use client";
+
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useAuth } from "@/context/auth-context";
 
+export default function Navbar() {
   const { user } = useAuth();
-  
+
   return (
     <header className="w-full sticky top-0 z-40 bg-transparent backdrop-blur-md border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
