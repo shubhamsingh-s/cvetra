@@ -110,4 +110,5 @@ export const applications = {
     method: 'POST',
     body: JSON.stringify({ userId, jobId }),
   }),
+  getByUserId: (userId: string) => apiFetch(`/api/applications/user/${userId}`),
 };

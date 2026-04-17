@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Match = require('../models/Match');
 const Resume = require('../models/Resume');
+const Job = require('../models/Job');
 
 /**
  * Apply for a job
@@ -41,6 +42,23 @@ router.post('/apply', async (req, res) => {
     res.json({ status: 'ok', message: 'Application submitted successfully', match });
   } catch (err) {
     console.error('Apply Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all applications for a user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const resumes = await Resume.find({ userId });
+    const resumeIds = resumes.map(r => r._id);
+    
+    const apps = await Match.find({ resumeId: { $in: resumeIds } })
+      .populate('jobId')
+      .sort({ createdAt: -1 });
+      
+    res.json({ status: 'ok', applications: apps });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
