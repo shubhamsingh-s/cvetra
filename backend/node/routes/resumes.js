@@ -35,7 +35,7 @@ router.post('/analyze-resume', async (req, res) => {
     let analysis = null;
     if (aiUrl) {
       // call AI engine analyze_text endpoint
-      const r = await fetch(`${aiUrl}/analyze_text`, {
+      const r = await fetch(`${aiUrl}/api/resume/analyze_text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ resume_text: resume.parsedText || '', jd_text: jd_text || '' })
