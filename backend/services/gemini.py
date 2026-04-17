@@ -17,8 +17,13 @@ Return ONLY valid JSON with these exact keys:
   "career_prediction": {{"next_role": "", "salary_range": "", "timeline": "", "skill_gaps": []}},
   "interview_questions": ["5 questions"],
   "fraud_flags": {{"keyword_stuffing": false, "exp_anomaly": false, "details": ""}},
-  "improved_summary": "rewritten summary paragraph"
-}}
+  "improved_summary": "rewritten summary paragraph",
+  "scoring_metadata": {
+    "skill_depth_score": 0,
+    "experience_match_score": 0,
+    "formatting_score": 0
+  }
+}
 Resume: {resume_text}
 Job Description: {jd_text}
 '''

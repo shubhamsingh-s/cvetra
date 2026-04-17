@@ -4,6 +4,7 @@ from bson import ObjectId
 from services.db import get_users_collection, get_resumes_collection, get_jobs_collection, get_matches_collection
 from services.gemini import analyze as analyze_with_gemini
 from services.scorer import calculate_score
+from services.embedder import embed, cosine_similarity
 import datetime
 
 router = APIRouter()
@@ -38,13 +39,16 @@ async def apply_job(payload: ApplyRequest):
     jd_text = job.get("description", "")
     
     try:
-        # Use Gemini service for analysis
+        # 4.1 Perform Semantic Conceptual Analysis
+        # Get embeddings for both resume and job description
+        resume_vec = embed(resume_text)
+        jd_vec = embed(jd_text)
+        semantic_sim = cosine_similarity(resume_vec, jd_vec)
+
+        # 4.2 Use Gemini service for multi-factor analysis
         analysis = analyze_with_gemini(resume_text, jd_text)
         
-        # Calculate scores using the scorer service
-        # In a real app, we might want to get semantic similarity from an embedder
-        # For now, we'll use a placeholder or check if gemini provided one
-        semantic_sim = 0.75 # Placeholder until we integrate embedder if needed
+        # Calculate final composite scores using the scores from Gemini + Semantic Embeddings
         scores = calculate_score(semantic_sim, analysis)
         analysis.update(scores)
     except Exception as e:
